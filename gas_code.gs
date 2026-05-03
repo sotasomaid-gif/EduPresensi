@@ -180,17 +180,16 @@ function registerUser(user) {
   const sheet = SS.getSheetByName("Users");
   const id = user.id || "U-" + Math.floor(Math.random() * 1000000); 
   const subjectsStr = Array.isArray(user.subjects) ? user.subjects.join(", ") : (user.subjects || "");
-  const photoUrl = saveToUserDrive(user.faceData, user.name, id, "Master_Wajah", "Face_Master.jpg");
-  sheet.appendRow(safeRow([id, user.email, user.name, "employee", user.department, "123456", photoUrl, user.username, user.whatsapp, subjectsStr]));
-  return { id, ...user, facedata: photoUrl, role: "employee" };
+  // Columns: ID, Email, Name, Role, Dept, Password, (Reserved/Empty), Username, WhatsApp, Subjects
+  sheet.appendRow(safeRow([id, user.email, user.name, "employee", user.department, "123456", "", user.username, user.whatsapp, subjectsStr]));
+  return { id, ...user, role: "employee" };
 }
 
 function bulkRegisterUsers(students) {
   const sheet = SS.getSheetByName("Users");
   students.forEach(s => {
     const subjectsStr = Array.isArray(s.subjects) ? s.subjects.join(", ") : (s.subjects || "");
-    const photoUrl = saveToUserDrive(s.faceData || "", s.name || "Siswa", s.id || "TEMP", "Master_Wajah", "Face_Master.jpg");
-    sheet.appendRow(safeRow([s.id, s.email, s.name, s.role || "employee", s.department, s.password || "123456", photoUrl, s.username, s.whatsapp, subjectsStr]));
+    sheet.appendRow(safeRow([s.id, s.email, s.name, s.role || "employee", s.department, s.password || "123456", "", s.username, s.whatsapp, subjectsStr]));
   });
   return { success: true };
 }
@@ -207,9 +206,9 @@ function saveAttendance(record) {
   const sheet = SS.getSheetByName("Attendance");
   const id = "ATT-" + Utilities.getUuid().substring(0, 8);
   const dateStr = record.date || Utilities.formatDate(new Date(), "GMT+7", "dd/MM/yyyy");
-  const photoUrl = saveToUserDrive(record.selfieIn, record.userName, record.userId, "Absensi", "In_" + dateStr.replace(/\//g, "-") + ".jpg");
-  sheet.appendRow(safeRow([id, record.userId, dateStr, record.clockIn, "", record.latIn, record.lngIn, "", "", record.status, photoUrl, "", record.wifiVerified, record.userName]));
-  return { id, selfiein: photoUrl };
+  // Columns: ID, UserID, Date, In, Out, LatIn, LngIn, LatOut, LngOut, Status, (Reserved/Empty SelfieIn), (Reserved/Empty SelfieOut), WiFi, UserName
+  sheet.appendRow(safeRow([id, record.userId, dateStr, record.clockIn, "", record.latIn, record.lngIn, "", "", record.status, "", "", record.wifiVerified, record.userName]));
+  return { id };
 }
 
 function updateAttendance(u) {
@@ -217,11 +216,11 @@ function updateAttendance(u) {
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (data[i][0].toString() === u.id.toString()) {
-      const photoUrl = saveToUserDrive(u.selfieOut, "User", u.id, "Absensi", "Out_" + data[i][2] + ".jpg");
       sheet.getRange(i + 1, 5).setValue(u.clockOut);
       sheet.getRange(i + 1, 8).setValue(u.latOut);
       sheet.getRange(i + 1, 9).setValue(u.lngOut);
-      sheet.getRange(i + 1, 12).setValue(photoUrl);
+      // Row 12 is SelfieOut, set to empty
+      sheet.getRange(i + 1, 12).setValue("");
       return { success: true };
     }
   }

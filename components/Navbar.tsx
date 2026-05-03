@@ -44,7 +44,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, activePage, onNavigate, onLogout 
     });
   }
 
-  const profileImageUrl = user.profileImage || user.faceData || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`;
+  const profileImageUrl = user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`;
 
   return (
     <>

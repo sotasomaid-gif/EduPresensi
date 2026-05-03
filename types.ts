@@ -9,7 +9,6 @@ export interface User {
   whatsapp: string;
   subjects: string[]; // List of followed subjects
   profileImage?: string;
-  faceData?: string;
 }
 
 export interface AttendanceRecord {
@@ -24,8 +23,6 @@ export interface AttendanceRecord {
   latOut?: number;
   lngOut?: number;
   status: 'hadir' | 'terlambat' | 'izin' | 'alpa' | 'sakit';
-  selfieIn?: string;
-  selfieOut?: string;
   wifiVerified: boolean;
 }
 

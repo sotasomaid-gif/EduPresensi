@@ -42,8 +42,7 @@ class GasService {
       role: u.role || 'employee',
       department: u.department || u.class || '',
       whatsapp: u.whatsapp || '',
-      subjects: u.subjects ? (typeof u.subjects === 'string' ? u.subjects.split(', ') : u.subjects) : [],
-      faceData: u.facedata || ''
+      subjects: u.subjects ? (typeof u.subjects === 'string' ? u.subjects.split(', ') : u.subjects) : []
     };
   }
 

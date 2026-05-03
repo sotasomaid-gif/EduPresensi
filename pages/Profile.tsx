@@ -18,7 +18,7 @@ const ProfilePage: React.FC<ProfileProps> = ({ user, onLogout, onBack }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const profileImageUrl = user.profileImage || user.faceData || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=200`;
+  const profileImageUrl = user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=200`;
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();

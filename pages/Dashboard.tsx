@@ -60,7 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
     );
   }
 
-  const profileImageUrl = user.profileImage || user.faceData || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=200`;
+  const profileImageUrl = user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random&size=200`;
 
   return (
     <div className="max-w-6xl mx-auto px-4 lg:px-8 space-y-10 pb-32 pt-6 page-transition">

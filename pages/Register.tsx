@@ -1,8 +1,7 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { gasService } from '../services/gasService';
 import { User } from '../types';
-import { analyzeEnrollmentFace } from '../services/geminiService';
 
 interface RegisterProps {
   onRegister: (user: User) => void;
@@ -16,7 +15,7 @@ const AVAILABLE_SUBJECTS = [
 ];
 
 const Register: React.FC<RegisterProps> = ({ onRegister, onNavigateToLogin }) => {
-  const [step, setStep] = useState<'info' | 'face' | 'details'>('info');
+  const [step, setStep] = useState<'info' | 'details'>('info');
   const [formData, setFormData] = useState({
     name: '',
     id: '', // NISN
@@ -25,54 +24,14 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onNavigateToLogin }) =>
     department: '', // Kelas
     whatsapp: '',
     password: '',
-    subjects: [] as string[],
-    faceData: ''
+    subjects: [] as string[]
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const startCamera = async () => {
-    setStep('face');
+  const startRegistration = () => {
+    setStep('details');
     setError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-      setTimeout(() => {
-        if (videoRef.current) videoRef.current.srcObject = stream;
-      }, 100);
-    } catch (err) {
-      setError("Kamera tidak dapat diakses. Pastikan izin kamera diberikan.");
-    }
-  };
-
-  const captureFace = async () => {
-    if (videoRef.current && canvasRef.current) {
-      setLoading(true);
-      setError(null);
-      const context = canvasRef.current.getContext('2d');
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-      context?.drawImage(videoRef.current, 0, 0);
-      const dataUrl = canvasRef.current.toDataURL('image/jpeg', 0.8);
-      
-      try {
-        const check = await analyzeEnrollmentFace(dataUrl);
-        if (check.isVerified) {
-          setFormData({ ...formData, faceData: dataUrl });
-          setStep('details');
-          const stream = videoRef.current.srcObject as MediaStream;
-          stream.getTracks().forEach(t => t.stop());
-        } else {
-          setError(check.message);
-        }
-      } catch (e) {
-        setError("Gagal memproses wajah. Coba lagi.");
-      } finally {
-        setLoading(false);
-      }
-    }
   };
 
   const toggleSubject = (subject: string) => {
@@ -99,8 +58,7 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onNavigateToLogin }) =>
         email: formData.email,
         department: formData.department,
         whatsapp: formData.whatsapp,
-        subjects: formData.subjects,
-        faceData: formData.faceData
+        subjects: formData.subjects
       });
       onRegister(user);
     } catch (err: any) {
@@ -124,19 +82,19 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onNavigateToLogin }) =>
               <div className="p-8 bg-blue-50 rounded-[32px] space-y-4 border border-blue-100 shadow-inner">
                 <div className="w-20 h-20 bg-blue-600 rounded-[24px] flex items-center justify-center mx-auto text-white shadow-xl shadow-blue-200 animate-float">
                   <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <h3 className="font-black text-slate-800 text-xl">Langkah 1: Verifikasi Wajah</h3>
+                <h3 className="font-black text-slate-800 text-xl">Langkah 1: Lengkapi Profil</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-bold uppercase tracking-wider">
-                  Amankan akun Anda dengan biometrik. Foto ini akan menjadi referensi utama saat melakukan presensi harian.
+                  Silakan lengkapi data diri Anda untuk mengakses sistem presensi sekolah. Gunakan NISN resmi Anda sebagai ID.
                 </p>
               </div>
               <button 
-                onClick={startCamera}
+                onClick={startRegistration}
                 className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black shadow-2xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-95"
               >
-                MULAI VERIFIKASI WAJAH
+                MULAI PENDAFTARAN
               </button>
               <p className="text-center text-xs font-black text-slate-400 uppercase tracking-widest">
                 Sudah punya akun? <button onClick={onNavigateToLogin} className="text-blue-600">Login Disini</button>
@@ -144,38 +102,8 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onNavigateToLogin }) =>
             </div>
           )}
 
-          {step === 'face' && (
-            <div className="space-y-6">
-              <div className="relative aspect-square bg-slate-900 rounded-[40px] overflow-hidden border-8 border-white shadow-2xl">
-                <video ref={videoRef} autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
-                <canvas ref={canvasRef} className="hidden" />
-                <div className="absolute inset-0 border-[40px] border-slate-900/40 rounded-[40px] pointer-events-none">
-                  <div className="w-full h-full border-2 border-white/50 border-dashed rounded-full" />
-                </div>
-              </div>
-              {error && <div className="p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold border border-red-100 text-center animate-pulse">{error}</div>}
-              <button 
-                disabled={loading}
-                onClick={captureFace}
-                className="w-full gradient-brand text-white py-5 rounded-3xl font-black shadow-2xl shadow-blue-500/20 flex items-center justify-center gap-3"
-              >
-                {loading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : 'AMBIL FOTO BIOMETRIK'}
-              </button>
-              <button onClick={() => setStep('info')} className="w-full text-slate-400 text-xs font-black uppercase tracking-widest">Batal</button>
-            </div>
-          )}
-
           {step === 'details' && (
             <form onSubmit={handleRegister} className="space-y-8 animate-in slide-in-from-bottom-6 duration-500">
-              <div className="flex justify-center -mt-16">
-                 <div className="relative group">
-                    <img src={formData.faceData} className="w-24 h-24 rounded-[32px] object-cover border-8 border-white shadow-2xl bg-white" />
-                    <div className="absolute -bottom-2 -right-2 bg-green-500 text-white p-2 rounded-full shadow-lg border-4 border-white">
-                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
-                    </div>
-                 </div>
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
@@ -224,9 +152,16 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onNavigateToLogin }) =>
               <button
                 disabled={loading}
                 type="submit"
-                className="w-full gradient-brand text-white py-5 rounded-3xl font-black shadow-2xl shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+                className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black shadow-2xl shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all text-sm uppercase tracking-widest"
               >
                 {loading ? 'MENYIMPAN DATA...' : 'KONFIRMASI PENDAFTARAN'}
+              </button>
+              <button 
+                type="button"
+                onClick={() => setStep('info')}
+                className="w-full text-slate-400 text-xs font-black uppercase tracking-widest"
+              >
+                Kembali
               </button>
             </form>
           )}
