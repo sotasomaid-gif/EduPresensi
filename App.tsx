@@ -19,8 +19,18 @@ const App: React.FC = () => {
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
-      setCurrentPage(Page.DASHBOARD);
+      try {
+        const userData = JSON.parse(savedUser);
+        if (userData && typeof userData === 'object') {
+          setUser(userData);
+          setCurrentPage(Page.DASHBOARD);
+        } else {
+          localStorage.removeItem('user');
+        }
+      } catch (e) {
+        console.error("Failed to parse saved user:", e);
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 

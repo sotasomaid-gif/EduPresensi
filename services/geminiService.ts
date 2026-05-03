@@ -2,7 +2,15 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { gasService } from "./gasService";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAiInstance = () => {
+  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.warn("GEMINI_API_KEY is not defined. AI features will not work.");
+  }
+  return new GoogleGenAI({ apiKey: apiKey || 'dummy-key' });
+};
+
+const ai = getAiInstance();
 
 /**
  * Mendapatkan Base64 gambar dari URL Drive secara aman melalui Proxy GAS
