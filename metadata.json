@@ -1,0 +1,8 @@
+{
+  "name": "PresensiGo - Smart Attendance System",
+  "description": "Sistem presensi online modern dengan verifikasi wajah, GPS, dan WiFi, terintegrasi dengan Google Sheets.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
